@@ -12,16 +12,19 @@ logger = logging.getLogger(__name__)
 
 
 class CredentialsStolenEventSchema(Schema):
-    source: fields.UUID()
-    target: fields.UUID()  # TODO: Fix it later
-    timestamp: fields.Float()
-    tags: fields.List(fields.Nested(fields.Str()))
+    source = fields.Int()
+    target = fields.UUID(allow_none=True)  # TODO: Fix it later
+    timestamp = fields.Float()
+    tags = fields.List(fields.Nested(fields.Str()))
     stolen_credentials = fields.List(fields.Nested(CredentialsSchema))
 
     @post_load
     def _make_credentials_stolen_event(self, data, **kwargs):
-        list_credentials = [Credentials.from_mapping(creds) for creds in data["stolen_credentials"]]
-        return CredentialsStolenEvent(list_credentials)
+        stolen_credentials = [Credentials(**c) for c in data["stolen_credentials"]]
+        data["stolen_credentials"] = stolen_credentials
+        data["tags"] = frozenset(data["tags"])
+
+        return CredentialsStolenEvent(**data)
 
 
 @dataclass(frozen=True)
@@ -37,16 +40,8 @@ class CredentialsStolenEvent(AbstractEvent):
 
     @staticmethod
     def from_dict(event_data):
-        try:
-            deserialized_data = CredentialsStolenEventSchema().load(event_data)
-            return deserialized_data
-        except Exception as err:
-            logger.debug(f"Some kind of error happened: {err}")
+        return CredentialsStolenEventSchema().load(event_data)
 
     @staticmethod
     def to_dict(event):
-        try:
-            serialized_data = CredentialsStolenEventSchema().dump(event)
-            return serialized_data
-        except Exception as err:
-            logger.debug(f"Some kind of error happened: {err}")
+        return CredentialsStolenEventSchema().dump(event)

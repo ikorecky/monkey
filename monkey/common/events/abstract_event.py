@@ -22,7 +22,7 @@ class AbstractEvent(ABC):
         :param tags: The set of tags associated with the event
     """
 
-    source: UUID = field(default_factory=getnode)
+    source: int = field(default_factory=getnode)
     target: Union[UUID, IPv4Address, None] = field(default=None)
     timestamp: float = field(default_factory=time.time)
     tags: FrozenSet[str] = field(default_factory=frozenset)
