@@ -3,8 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from common.event_serializers import EventSerializerRegistry, IEventSerializer
-from common.events import AbstractEvent
+from common.events import AbstractEvent, EventSerializerRegistry, IEventSerializer
 
 
 @dataclass(frozen=True)
