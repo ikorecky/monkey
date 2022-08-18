@@ -9,4 +9,4 @@ from .password import Password
 from .ssh_keypair import SSHKeypair
 from .username import Username
 
-from .credentials import Credentials
+from .credentials import Credentials, CredentialsSchema
