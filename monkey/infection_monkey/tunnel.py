@@ -203,7 +203,8 @@ class MonkeyTunnel(Thread):
     def _calculate_timeout(self) -> float:
         try:
             return QUIT_TIMEOUT - (time.time() - get_last_serve_time())
-        except TypeError:  # get_last_serve_time() may return None
+        except TypeError as err:  # get_last_serve_time() may return None
+            logger.debug(f"Error happened when calculating timeout: {err}")
             return 0.0
 
     def get_tunnel_for_ip(self, ip: str):
