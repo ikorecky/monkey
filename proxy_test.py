@@ -7,6 +7,8 @@ from typing import Callable, List
 
 MessageCallback = Callable[[bytes, Lock], None]
 
+logging.basicConfig(level=logging.INFO)
+
 
 def client(args):
     """Attempts to establish a connection to the server, and creates a proxy connection"""
@@ -17,9 +19,11 @@ def client(args):
         logging.warning("Unable to connect to the server.")
         return
 
-    proxy_thread = Thread(target=create_proxy, args=(sock, ip, port))
-    proxy_thread.run()
+    logging.info("Connected to the server.")
+    proxy_thread = Thread(target=create_proxy, args=(sock, socket.gethostname(), port))
+    proxy_thread.start()
 
+    logging.info("Now for some user input.")
     while True:
         text = input("Send some data: ")
         sock.send(text.encode())
@@ -41,14 +45,16 @@ def server(args):
 
 class ClientThread(Thread):
     def __init__(self, sock: socket.socket, lock: Lock, handle_data: MessageCallback):
+        super(ClientThread, self).__init__()
         self._sock = sock
         self._handle_data = handle_data
         self._lock = lock
 
     def run(self):
         while True:
-            data = self._sock.recv()
-            self._handle_data(data, self._lock)
+            data = self._sock.recv(4096)
+            if len(data):
+                self._handle_data(data, self._lock)
 
 
 def server_message_received(data: bytes, lock: Lock, source: str):
@@ -65,6 +71,7 @@ def listen(ip: str, port: int):
     """Listen for traffic on given IP and Port"""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
+        logging.info(f"Creating a socket to listen on {ip}:{port}")
         sock.bind((ip, port))
         sock.listen()
     except Exception:
@@ -109,6 +116,11 @@ def try_connect(ip: str, port: int):
 def create_proxy(dest_sock: socket.socket, ip: str, port: int):
     """Establish the proxy connection"""
     sock = listen(ip, int(port))
+    if not sock:
+        logging.error("Unable to listen.")
+        return
+
+    logging.info(f"Waiting for clients on {ip}:{port}")
     proxy_accept_clients(sock, partial(proxy_message_received, sock=dest_sock))
 
 
