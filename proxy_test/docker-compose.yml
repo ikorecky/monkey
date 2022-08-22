@@ -1,0 +1,23 @@
+version: "3.5"
+services:
+        server:
+                build: .
+                command: tail -F /dev/null
+                ports:
+                        - "5000"
+                volumes:
+                        - .:/source
+        client-a:
+                build: .
+                command: tail -F /dev/null
+                ports:
+                        - "5000"
+                volumes:
+                        - .:/source
+        client-b:
+                build: .
+                command: tail -F /dev/null
+                ports:
+                        - "5000"
+                volumes:
+                        - .:/source
