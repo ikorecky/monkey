@@ -2,22 +2,34 @@ version: "3.5"
 services:
         server:
                 build: .
-                command: tail -F /dev/null
+                command: python3 /source/proxy_test.py server server:5000
                 ports:
                         - "5000"
+                tty: true
                 volumes:
                         - .:/source
         client-a:
                 build: .
-                command: tail -F /dev/null
+                command: python3 /source/proxy_test.py client server:5000
+                depends_on:
+                        - server
                 ports:
                         - "5000"
+                restart: on-failure
+                stdin_open: true
+                tty: true
                 volumes:
                         - .:/source
         client-b:
                 build: .
-                command: tail -F /dev/null
+                command: python3 /source/proxy_test.py client client-a:5000
+                depends_on:
+                        - server
+                        - client-a
                 ports:
                         - "5000"
+                restart: on-failure
+                stdin_open: true
+                tty: true
                 volumes:
                         - .:/source
