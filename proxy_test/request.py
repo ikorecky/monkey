@@ -11,6 +11,7 @@ def main():
     parser.add_argument("url")
     args = parser.parse_args()
 
+    proxies = None
     if args.proxies:
         proxies = {v[: v.find("://")]: v for v in args.proxies}
 
