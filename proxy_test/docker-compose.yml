@@ -2,7 +2,7 @@ version: "3.5"
 services:
         server:
                 build: .
-                command: python3 /source/proxy_test.py server server:5000
+                command: python3 -m http.server --bind server 5000
                 ports:
                         - "5000"
                 tty: true
@@ -10,7 +10,7 @@ services:
                         - .:/source
         client-a:
                 build: .
-                command: python3 /source/proxy_test.py client server:5000
+                command: python3 /source/proxy_test.py server:5000
                 depends_on:
                         - server
                 ports:
@@ -22,7 +22,7 @@ services:
                         - .:/source
         client-b:
                 build: .
-                command: python3 /source/proxy_test.py client client-a:5000
+                command: python3 /source/proxy_test.py client-a:5000
                 depends_on:
                         - server
                         - client-a

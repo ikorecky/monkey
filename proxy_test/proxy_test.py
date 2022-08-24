@@ -23,24 +23,9 @@ def client(args):
     proxy_thread = Thread(target=create_proxy, args=(sock, socket.gethostname(), port))
     proxy_thread.start()
 
-    logging.info("Now for some user input.")
+    # Keeping the client alive
     while True:
-        text = input("Send some data: ")
-        sock.send(text.encode())
-
-
-def server(args):
-    """Listens on a connection and handles messages"""
-
-    logging.info("Starting the server.")
-    # Parse the argument
-    ip, port = args.connection.split(":")
-    sock = listen(ip, int(port))
-    if not sock:
-        logging.error(f"Could not listen on {ip}:{port}")
-        return
-
-    server_accept_clients(sock, server_message_received)
+        continue
 
 
 class ClientThread(Thread):
@@ -55,11 +40,6 @@ class ClientThread(Thread):
             data = self._sock.recv(4096)
             if len(data):
                 self._handle_data(data, self._lock)
-
-
-def server_message_received(data: bytes, lock: Lock, source: str):
-    with lock:
-        print(f"{source}:\n\t{data.decode('utf-8')}")
 
 
 def proxy_message_received(data: bytes, lock: Lock, sock: socket.socket):
@@ -79,15 +59,6 @@ def listen(ip: str, port: int):
         return None
 
     return sock
-
-
-def server_accept_clients(sock: socket.socket, message_handler):
-    lock = Lock()
-    while True:
-        client_sock, addr = sock.accept()
-        logging.debug(f"Client connected: {addr}")
-        thread = ClientThread(client_sock, lock, partial(message_handler, source=addr))
-        thread.start()
 
 
 def connect(connections: List[str]):
@@ -135,15 +106,9 @@ def proxy_accept_clients(sock: socket.socket, message_handler):
 
 def main():
     parser = argparse.ArgumentParser(description="Prototype proxy connection.")
-    subs = parser.add_subparsers()
-    client_parser = subs.add_parser("client", description="Start a client")
-    client_parser.add_argument("servers", nargs="+", default=[])
-    server_parser = subs.add_parser("server", description="Start a server")
-    server_parser.add_argument("connection")
-    client_parser.set_defaults(func=client)
-    server_parser.set_defaults(func=server)
+    parser.add_argument("servers", nargs="+", default=[])
     args = parser.parse_args()
-    args.func(args)
+    client(args)
 
 
 if __name__ == "__main__":
