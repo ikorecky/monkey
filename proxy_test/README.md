@@ -109,8 +109,29 @@ proxy_test_server_1 172.20.0.2/16
 ```shell
 # From docker host machine. Note that we use client-a's IP here:
 $ printf "GET /index.html HTTP/1.0\r\nHost: server\r\n\r\n" | nc 172.20.0.3 5000
+HTTP/1.0 404 File not found
+Server: SimpleHTTP/0.6 Python/3.10.4
+Date: Wed, 24 Aug 2022 12:29:05 GMT
+Connection: close
+Content-Type: text/html;charset=utf-8
+Content-Length: 469
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+        "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>Error response</title>
+    </head>
+    <body>
+        <h1>Error response</h1>
+        <p>Error code: 404</p>
+        <p>Message: File not found.</p>
+        <p>Error code explanation: HTTPStatus.NOT_FOUND - Nothing matches the given URI.</p>
+    </body>
+</html>
 
 # Observe the following from the server container:
-172.20.0.3 - - [24/Aug/2022 11:51:46] code 404, message File not found
-172.20.0.3 - - [24/Aug/2022 11:51:46] "GET /index.html HTTP/1.0" 404 -
+172.20.0.3 - - [24/Aug/2022 12:29:05] code 404, message File not found
+172.20.0.3 - - [24/Aug/2022 12:29:05] "GET /index.html HTTP/1.0" 404 -
 ```

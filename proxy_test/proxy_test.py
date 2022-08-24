@@ -1,13 +1,12 @@
 import argparse
 import logging
 import socket
-from functools import partial
 from threading import Lock, Thread
-from typing import Callable, List
-
-MessageCallback = Callable[[bytes, Lock], None]
+from typing import List
 
 logging.basicConfig(level=logging.INFO)
+
+READ_SIZE = 4096
 
 
 def client(args):
@@ -29,22 +28,31 @@ def client(args):
 
 
 class ClientThread(Thread):
-    def __init__(self, sock: socket.socket, lock: Lock, handle_data: MessageCallback):
+    def __init__(
+        self,
+        server_sock: socket.socket,
+        client_sock: socket.socket,
+        lock: Lock,
+    ):
         super(ClientThread, self).__init__()
-        self._sock = sock
-        self._handle_data = handle_data
+        self._server_sock = server_sock
+        self._client_sock = client_sock
         self._lock = lock
+
+    def _route_data(self, from_sock: socket.socket, to_sock: socket.socket):
+        try:
+            data = from_sock.recv(READ_SIZE)
+        except Exception:
+            return
+
+        if len(data):
+            with self._lock:
+                to_sock.send(data)
 
     def run(self):
         while True:
-            data = self._sock.recv(4096)
-            if len(data):
-                self._handle_data(data, self._lock)
-
-
-def proxy_message_received(data: bytes, lock: Lock, sock: socket.socket):
-    with lock:
-        sock.send(data)
+            self._route_data(self._server_sock, self._client_sock)
+            self._route_data(self._client_sock, self._server_sock)
 
 
 def listen(ip: str, port: int):
@@ -92,15 +100,15 @@ def create_proxy(dest_sock: socket.socket, ip: str, port: int):
         return
 
     logging.info(f"Waiting for clients on {ip}:{port}")
-    proxy_accept_clients(sock, partial(proxy_message_received, sock=dest_sock))
+    proxy_accept_clients(sock, dest_sock)
 
 
-def proxy_accept_clients(sock: socket.socket, message_handler):
+def proxy_accept_clients(local_sock: socket.socket, server_sock: socket.socket):
     lock = Lock()
     while True:
-        client_sock, addr = sock.accept()
+        client_sock, addr = local_sock.accept()
         logging.debug(f"Client connected: {addr}")
-        thread = ClientThread(client_sock, lock, message_handler)
+        thread = ClientThread(server_sock, client_sock, lock)
         thread.start()
 
 
