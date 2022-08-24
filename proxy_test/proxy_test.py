@@ -9,6 +9,13 @@ logging.basicConfig(level=logging.INFO)
 READ_SIZE = 4096
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Prototype proxy connection.")
+    parser.add_argument("servers", nargs="+", default=[])
+    args = parser.parse_args()
+    client(args)
+
+
 def client(args):
     """Attempts to establish a connection to the server, and creates a proxy connection"""
 
@@ -25,48 +32,6 @@ def client(args):
     # Keeping the client alive
     while True:
         continue
-
-
-class ClientThread(Thread):
-    def __init__(
-        self,
-        server_sock: socket.socket,
-        client_sock: socket.socket,
-        lock: Lock,
-    ):
-        super(ClientThread, self).__init__()
-        self._server_sock = server_sock
-        self._client_sock = client_sock
-        self._lock = lock
-
-    def _route_data(self, from_sock: socket.socket, to_sock: socket.socket):
-        try:
-            data = from_sock.recv(READ_SIZE)
-        except Exception:
-            return
-
-        if len(data):
-            with self._lock:
-                to_sock.send(data)
-
-    def run(self):
-        while True:
-            self._route_data(self._server_sock, self._client_sock)
-            self._route_data(self._client_sock, self._server_sock)
-
-
-def listen(ip: str, port: int):
-    """Listen for traffic on given IP and Port"""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        logging.info(f"Creating a socket to listen on {ip}:{port}")
-        sock.bind((ip, port))
-        sock.listen()
-    except Exception:
-        sock.close()
-        return None
-
-    return sock
 
 
 def connect(connections: List[str]):
@@ -103,6 +68,20 @@ def create_proxy(dest_sock: socket.socket, ip: str, port: int):
     proxy_accept_clients(sock, dest_sock)
 
 
+def listen(ip: str, port: int):
+    """Listen for traffic on given IP and Port"""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        logging.info(f"Creating a socket to listen on {ip}:{port}")
+        sock.bind((ip, port))
+        sock.listen()
+    except Exception:
+        sock.close()
+        return None
+
+    return sock
+
+
 def proxy_accept_clients(local_sock: socket.socket, server_sock: socket.socket):
     lock = Lock()
     while True:
@@ -112,11 +91,32 @@ def proxy_accept_clients(local_sock: socket.socket, server_sock: socket.socket):
         thread.start()
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Prototype proxy connection.")
-    parser.add_argument("servers", nargs="+", default=[])
-    args = parser.parse_args()
-    client(args)
+class ClientThread(Thread):
+    def __init__(
+        self,
+        server_sock: socket.socket,
+        client_sock: socket.socket,
+        lock: Lock,
+    ):
+        super(ClientThread, self).__init__()
+        self._server_sock = server_sock
+        self._client_sock = client_sock
+        self._lock = lock
+
+    def _route_data(self, from_sock: socket.socket, to_sock: socket.socket):
+        try:
+            data = from_sock.recv(READ_SIZE)
+        except Exception:
+            return
+
+        if len(data):
+            with self._lock:
+                to_sock.send(data)
+
+    def run(self):
+        while True:
+            self._route_data(self._server_sock, self._client_sock)
+            self._route_data(self._client_sock, self._server_sock)
 
 
 if __name__ == "__main__":
