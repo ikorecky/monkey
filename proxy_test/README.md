@@ -41,17 +41,7 @@ Starting proxy_test_server_1 ... done
 Starting proxy_test_client-a_1 ... done
 Starting proxy_test_client-b_1 ... done
 Attaching to proxy_test_server_1, proxy_test_client-a_1, proxy_test_client-b_1
-client-a_1  | INFO:root:Starting the client.
-client-a_1  | INFO:root:Connected to the server.
-client-a_1  | INFO:root:Now for some user input.
-client-a_1  | Send some data: INFO:root:Creating a socket to listen on 5af56f72e34e:5000
-client-a_1  | INFO:root:Waiting for clients on 5af56f72e34e:5000
 server_1    | Serving HTTP on 172.21.0.2 port 5000 (http://172.21.0.2:5000/) ...
-client-b_1  | INFO:root:Starting the client.
-client-b_1  | INFO:root:Connected to the server.
-client-b_1  | INFO:root:Now for some user input.
-client-b_1  | Send some data: INFO:root:Creating a socket to listen on 622159bd1100:5000
-client-b_1  | INFO:root:Waiting for clients on 622159bd1100:5000
 ```
 
 ### List running containers (new terminal)
