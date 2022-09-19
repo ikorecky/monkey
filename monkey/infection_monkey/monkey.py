@@ -106,6 +106,9 @@ logging.getLogger("urllib3").setLevel(logging.INFO)
 class InfectionMonkey:
     def __init__(self, args):
         logger.info("Monkey is initializing...")
+        from getpass import getuser
+
+        logger.debug(f"Running as {getuser()}")
         self._singleton = SystemSingleton()
         self._opts = self._get_arguments(args)
 
