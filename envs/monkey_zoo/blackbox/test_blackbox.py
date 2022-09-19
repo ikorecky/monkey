@@ -109,21 +109,25 @@ class TestMonkeyBlackbox:
 
     # If test_depth_1_a() is run first, some test will fail because machines are not yet fully
     # booted. Running test_depth_2_a() first gives slow VMs extra time to boot.
+    @pytest.mark.skip()
     def test_depth_2_a(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, depth_2_a_test_configuration, "Depth2A test suite"
         )
 
+    @pytest.mark.skip()
     def test_depth_1_a(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, depth_1_a_test_configuration, "Depth1A test suite"
         )
 
+    @pytest.mark.skip()
     def test_depth_3_a(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, depth_3_a_test_configuration, "Depth3A test suite"
         )
 
+    @pytest.mark.skip()
     def test_depth_4_a(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, depth_4_a_test_configuration, "Depth4A test suite"
@@ -139,6 +143,7 @@ class TestMonkeyBlackbox:
         )
 
     # Not grouped because it's slow
+    @pytest.mark.skip()
     def test_zerologon_exploiter(self, island_client):
         test_name = "Zerologon_exploiter"
         expected_creds = [
@@ -165,12 +170,14 @@ class TestMonkeyBlackbox:
 
     # Not grouped because conflicts with SMB.
     # Consider grouping when more depth 1 exploiters collide with group depth_1_a
+    @pytest.mark.skip()
     def test_wmi_and_mimikatz_exploiters(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, wmi_mimikatz_test_configuration, "WMI_exploiter,_mimikatz"
         )
 
     # Not grouped because it's depth 1 but conflicts with SMB exploiter in group depth_1_a
+    @pytest.mark.skip()
     def test_smb_pth(self, island_client):
         TestMonkeyBlackbox.run_exploitation_test(
             island_client, smb_pth_test_configuration, "SMB_PTH"
