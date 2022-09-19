@@ -23,6 +23,7 @@ if str(MONKEY_ISLAND_DIR_BASE_PATH) not in sys.path:
     sys.path.insert(0, MONKEY_ISLAND_DIR_BASE_PATH)
 
 from common import DIContainer  # noqa: E402
+from common.network.network_utils import get_my_ip_addresses  # noqa: E402
 from common.version import get_version  # noqa: E402
 from monkey_island.cc.app import init_app  # noqa: E402
 from monkey_island.cc.arg_parser import IslandCmdArgs  # noqa: E402
@@ -40,7 +41,6 @@ from monkey_island.cc.setup import (  # noqa: E402
     setup_agent_event_handlers,
     setup_island_event_handlers,
 )
-from common.network.network_utils import get_my_ip_addresses  # noqa: E402
 from monkey_island.cc.setup.data_dir import IncompatibleDataDirectory, setup_data_dir  # noqa: E402
 from monkey_island.cc.setup.gevent_hub_error_handler import GeventHubErrorHandler  # noqa: E402
 from monkey_island.cc.setup.island_config_options import IslandConfigOptions  # noqa: E402
@@ -51,12 +51,15 @@ logger = logging.getLogger(__name__)
 
 
 def run_monkey_island():
+    from getpass import getuser
+
     island_args = parse_cli_args()
     config_options = _extract_config(island_args)
     _exit_on_invalid_config_options(config_options)
 
     _setup_data_dir(config_options.data_dir)
     _configure_logging(config_options)
+    logger.debug(f"Running as {getuser()}")
 
     ip_addresses, deployment, version = _collect_system_info()
 
